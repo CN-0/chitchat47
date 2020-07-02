@@ -1,0 +1,106 @@
+.nav{
+    width: 100%;
+    height:6rem;
+    background-color: var(--color-dark);
+    color: var(--color-grey-light-1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    & > * {
+        min-width: 15rem;
+        font-size: 3rem;
+        font-weight: 600;
+        padding: 0 0.75rem;
+        cursor: pointer;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        
+        @media only screen and (max-width: $bp-smallest) {
+            font-size: 2rem;
+            min-width: 10rem;
+        }
+    }
+    .Logo, .login, .register, .logout{
+        a{
+        text-transform: capitalize;
+        text-decoration: none;
+        color: inherit;
+        }
+    }
+    .login,.register,.logout{
+        display: flex;
+        align-items: center;
+        height: 100%;
+        margin-right: 2rem;
+        font-size: 2.5rem;
+        border-bottom: 2px solid transparent;
+        
+        @media only screen and (max-width: $bp-smallest) {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+
+        }
+    }
+    .Logo{
+        border-bottom: 2px solid transparent;   
+        
+        &:hover{
+            color:var(--color-green-light);
+        }
+    }
+
+    .login:hover,.register:hover,.logout:hover {
+        border-bottom: 2px solid var(--color-green-light);
+        color:var(--color-green);
+    }
+    .menu-box{
+        display: none;
+        width: 4rem;
+        height: 6rem;
+        padding: 2.8rem 0rem 1rem .5rem;
+        @media only screen and (max-width: $bp-smallest) {
+            display: block;
+        }
+    }
+    .menu-bar{
+        position: relative;
+        width: 15rem;
+        &,
+        &::before,
+        &::after{
+            width: 2.3rem;
+            height: 2.2px;
+            background-color: var(--color-grey-dark-1);
+            display: inline-block;
+            transition: all .1s;
+        }
+        &::before,
+        &::after{
+            content: "";
+            position: absolute;
+            left: 0;
+        }
+        &::before{
+            top:-.8rem;
+        }
+        &::after{
+            top:.8rem;
+        }
+
+    }
+    .menu-box:hover .menu-bar{
+        background-color: var(--color-green);
+        transform: scale(1.02);
+    }
+    .menu-box:hover .menu-bar::before{
+        background-color: var(--color-green);
+        transform: scale(1.02);
+        top:-.9rem;
+    }
+    .menu-box:hover .menu-bar::after{
+        background-color: var(--color-green);
+        transform: scale(1.02);
+        top:.9rem;
+    }
+}

@@ -1,0 +1,32 @@
+.auth{
+    display: flex;
+    justify-content: space-between;
+    padding: 5rem 10rem 5rem 5rem;
+    width: 100%;
+    margin: auto 0;
+    .landing-text{
+        margin-right: auto;
+        font-size: 10rem;
+        line-height: 10rem;
+        color: var(--color-green-light);
+        margin: 3rem;
+        display: flex;
+        align-items: center;
+        @media only screen and (max-width: $bp-large) {
+            font-size: 8rem;
+        }
+        @media only screen and (max-width: $bp-medium) {
+            font-size: 5.5rem;
+        }
+        
+        @media only screen and (max-width: $bp-small) {
+            display: none;
+        }
+    }
+    @media only screen and (max-width: $bp-medium) {
+        padding: 0rem;
+    }
+    @media only screen and (max-width: $bp-small) {
+        padding: 0rem;
+    }
+}

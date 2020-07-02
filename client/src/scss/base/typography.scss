@@ -1,0 +1,21 @@
+.heading-secondary{
+    font-size: 3.5rem;
+    margin-top: 2rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: inline-block;
+    background-image: linear-gradient(to right, var(--color-green-light), var(--color-green-dark));
+    background-clip: text;
+    color: transparent;
+    letter-spacing: .2rem;
+}
+
+.heading-tertiary{
+    font-size: 3.2rem;
+    text-transform: capitalize;
+    font-weight: 700;
+    display: inline-block;
+    background-image: linear-gradient(to right, var(--color-green-light), var(--color-green-dark));
+    background-clip: text;
+    color: transparent;
+}
