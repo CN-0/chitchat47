@@ -54,7 +54,7 @@ export const authFail = (error) => {
 
 export const logout = () => {
     const token = localStorage.getItem("cctoken") 
-    Axios.post('/users/logout',{logout:"logout"},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
+    Axios.post('http://localhost:5000/users/logout',{logout:"logout"},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
         console.log(response.data.msg)
     }).catch(err=>{
         console.log(err.response.data.msg)
@@ -64,6 +64,7 @@ export const logout = () => {
     localStorage.removeItem('ccusername');
     localStorage.removeItem('ccfriends');
     localStorage.removeItem('ccmessages');
+    localStorage.removeItem('ccnewmessages');
     return {
         type: actionTypes.AUTH_LOGOUT
     };
@@ -79,7 +80,7 @@ export const sidebarStatus = status =>{
 export const postFriends = data =>{
     return dispatch => {
         const token = localStorage.getItem("cctoken") 
-        Axios.post('/users/friends',{friend:data},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
+        Axios.post('http://localhost:5000/users/friends',{friend:data},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
             localStorage.setItem('ccfriends', JSON.stringify(response.data));   
             dispatch(addFriends(response.data))
         }).catch(err=>{
@@ -91,7 +92,7 @@ export const postFriends = data =>{
 export const getMessages = data =>{
     return dispatch => {
         let ccktoken = localStorage.getItem("cctoken")
-        Axios.get(`/users/chat/${data}`,{headers:{Authorization:`Bearer ${ccktoken}`}}).then(response=>{
+        Axios.get(`http://localhost:5000/users/chat/${data}`,{headers:{Authorization:`Bearer ${ccktoken}`}}).then(response=>{
             localStorage.setItem('ccmessages', JSON.stringify(response.data));   
             dispatch(setMessages(response.data))
         }).catch(err=>{
@@ -129,7 +130,7 @@ export const removeMessages = data =>{
 export const login = (loginData) => {
     return dispatch => {
         dispatch(authStart())
-        let url = '/users/login'
+        let url = 'http://localhost:5000/users/login'
         
         Axios.post(url, loginData)
             .then(response => {
@@ -151,7 +152,7 @@ export const register = (registerData) => {
         if(registerData.password !== registerData.cpassword){
             return dispatch(authFail("passwords don't match"))
         }
-        let url = '/users/register'
+        let url = 'http://localhost:5000/users/register'
         Axios.post(url, registerData)
             .then(response => {
                 localStorage.setItem('cctoken', response.data.token);

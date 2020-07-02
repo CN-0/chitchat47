@@ -55,7 +55,17 @@ const setNewMessages = (state, action) => {
 };
 
 const authLogout = (state, action) => {
-    return updateObject(state, { token: null, email: null, username:null });
+    return updateObject(state, { token: null,
+        email: null,
+        username:null,
+        friends:null,
+        messages:{chat:null,messages:null},
+        newmessages:null,
+        sidebarStatus:true,
+        error: null,
+        loading: false,
+        authRedirectPath: '/'
+    });
 };
 
 const setAuthRedirectPath = (state, action) => {

@@ -12,7 +12,10 @@ const Home = props =>{
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
     const [activeIndex,setActiveIndex] = useState("");
-    const { current: socket } = useRef(io.connect(window.location.hostname,{
+    /*const { current: socket } = useRef(io.connect(window.location.hostname,{
+        query: `token=${props.mytoken}`
+    }))*/
+    const { current: socket } = useRef(io.connect("http://localhost:5000",{
         query: `token=${props.mytoken}`
     }))
 
@@ -119,7 +122,7 @@ const Home = props =>{
 const mapStateToProps = state => {
     return {
       myfriends: state.auth.friends,
-      //mymessages: state.auth.messages,
+      mysidebarstatus: state.auth.sidebarStatus,
       mynewmessages:state.auth.newmessages,
       mytoken: state.auth.token,
       myemail:state.auth.email

@@ -31,6 +31,17 @@
                 &:hover{
                     background-color: var(--color-green-dark);
                 }
+                @media only screen and (max-width: $bp-medium) {
+                   padding: 1.4rem 3.5rem;
+                }
+                @media only screen and (max-width: $bp-small) {
+                    padding: 1.2rem 2.5rem;
+                    font-size: 1.2rem;
+                }
+                @media only screen and (max-width: $bp-smallest) {
+                    padding: 1.2rem 3rem;
+                    font-size: 1.4rem;
+                }
             }
         }
         &__chat{
@@ -84,12 +95,11 @@
                 padding:.5rem .5rem;
             }
         }
-        @media only screen and (max-width: $bp-small) {
-            max-width: 26rem;
+        @media only screen and (max-width: $bp-medium) {
+            max-width: 34rem;
             border-right: .5rem solid var(--color-dark-dark);
         }
-        
-        @media only screen and (max-width: $bp-smallu) {
+        @media only screen and (max-width: $bp-small) {
             max-width: 26rem;
         }
         @media only screen and (max-width: $bp-smallest) {
@@ -187,7 +197,7 @@
 
 .chat-page-main-open{
     @media only screen and (max-width: $bp-smallest) {
-        display: flex!important;
+        width: 100%;
     }
 }
 
@@ -196,4 +206,10 @@
     justify-content: space-between;
     align-items: center;
     padding: .2rem 6rem 1.2rem 4rem;
+    @media only screen and (max-width: $bp-small) {
+        padding:.2rem 4rem 1.2rem 2rem;
+    }
+    @media only screen and (max-width: $bp-smallest) {
+        padding:.2rem 4rem 1.2rem 2rem;
+    }
 }

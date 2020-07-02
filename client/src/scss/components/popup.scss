@@ -40,6 +40,7 @@
             width: 100%;
             padding-top: 3rem;
             
+            
         }
 
         &__bottom{
@@ -64,6 +65,10 @@
                     box-shadow: 0 1rem 2rem rgba(var(--color-black),.2);
                 }
             }
+        }
+        @media only screen and (max-width: $bp-smallest) {
+            padding: 1rem .5rem .3rem .5rem;
+            margin-top: -10rem;
         }
     }
 
