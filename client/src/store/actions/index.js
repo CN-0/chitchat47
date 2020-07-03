@@ -7,6 +7,7 @@ export {
     postMessages,
     removeMessages,
     sidebarStatus,
+    updatePassword,
     getMessages,
     setAuthRedirectPath,
     authCheckState

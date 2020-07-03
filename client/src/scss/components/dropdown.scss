@@ -1,0 +1,38 @@
+.dropdown{
+    position: relative;
+    height: 100%;
+    width: 10rem;
+    text-align: center;
+    &-btn{
+        color: var(--color-white);
+        padding-left: 1rem;
+        text-decoration: none;
+        &:hover{
+            border-bottom: 2px solid transparent!important;
+        }
+    }
+    &-content{
+        position: absolute;
+        display: none;
+        width: 100%;
+        background-color: var(--color-green);
+        box-shadow: var(--shadow-dark);
+        overflow: hidden;
+        z-index: 100;
+        flex-direction: column;
+        &-btn{
+            color: var(--color-white);
+            text-decoration: none;
+           font-size: 2rem;
+            padding: 0rem .1rem;
+           &:hover{
+            color:var(--color-dark);
+           }
+
+        }
+    }
+    &:hover &-content{
+        display: flex;
+    }
+
+}

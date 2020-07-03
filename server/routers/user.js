@@ -134,24 +134,17 @@ router.post('/chat',auth, async(req,res)=>{
     }
 })
 
-router.patch('update',auth, async (req,res)=>{
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['username','email','password']
-    const isValidOperation = updates.every((update)=>allowedUpdates.includes(update))
-
-    if(!isValidOperation){
-        return res.status(400).send({error:'Invalid updates!'})
-    }
+router.patch('/update',auth, async (req,res)=>{
     try {
-        updates.forEach(update=>req.user[update] = req.body[update])
+        req.user["password"] = req.body["password"]
         await req.user.save()
-        res.send(req.user)
+        res.status(200).send("password changed successfully!")
     } catch (e) {
         res.status(400).json({msg:e.message})
     }
 })
 
-router.delete('delete',auth, async(req,res)=>{
+router.delete('/delete',auth, async(req,res)=>{
     try {
         await req.user.remove()
         res.send(req.user)
@@ -161,3 +154,4 @@ router.delete('delete',auth, async(req,res)=>{
 })
 
 module.exports = router
+
