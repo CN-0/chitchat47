@@ -12,12 +12,12 @@ const Home = props =>{
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
     const [activeIndex,setActiveIndex] = useState("");
-    /*const { current: socket } = useRef(io.connect(window.location.hostname,{
-        query: `token=${props.mytoken}`
-    }))*/
-    const { current: socket } = useRef(io.connect("http://localhost:5000",{
+    const { current: socket } = useRef(io.connect(window.location.hostname,{
         query: `token=${props.mytoken}`
     }))
+    /*const { current: socket } = useRef(io.connect("http://localhost:5000",{
+        query: `token=${props.mytoken}`
+    }))*/
 
     useEffect(()=>{
         let friends=[]
