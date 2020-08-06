@@ -1,9 +1,13 @@
 const express = require('express');
+var fs = require('fs');
 const cors = require('cors');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose')
 const Message = require('./models/message')
+const auth = require('./middleware/auth')
 const Chats = require('./models/chats')
+const User = require('./models/user')
+var multer = require('multer');
 const app = express();
 const path = require('path');
 const socketioJwt   = require('socketio-jwt')
@@ -25,6 +29,27 @@ io.use(socketioJwt.authorize({
 app.use(express.json())
 app.use(cors())
 app.use('/users',userRouter)
+
+var storage = multer.diskStorage({ 
+  destination: (req, file, cb) => { 
+      cb(null, './server/uploads') 
+  }, 
+  filename: (req, file, cb) => { 
+      cb(null, file.originalname) 
+  } 
+}); 
+
+var upload = multer({ storage: storage }).single("file");
+
+app.post('/avatar',auth,upload,async (req, res) => {
+  req.user["avatar"] = {name: req.file.filename, img:{data: fs.readFileSync(path.join(__dirname , './uploads' , req.file.filename)), contentType: req.file.mimetype}}
+  await req.user.save()
+  fs.unlink(__dirname+ `/uploads/${req.file.filename}`, (err) => {
+    if (err) throw err;
+  });  
+  const data = req.user
+  return res.send({ data });
+});
 
 io.on("connection", socket => {
   socket.on("addSocket",async (chats)=>{
@@ -55,12 +80,12 @@ io.on("connection", socket => {
           });
         });
     }catch(e){
-        console.log(e)
+        console.log('inputmsg', e)
     } 
   })
   socket.on('disconnect',async () => {
     Chats.find({sockets:socket.id}, async (err, memes) => {
-      console.log(err)
+      console.log('disconnect',err)
       for(let meme of memes){
         meme.sockets = await meme.sockets.filter(id=>id !== socket.id)
         await meme.save()
@@ -68,6 +93,7 @@ io.on("connection", socket => {
     });
 })
 })
+
 
 if(process.env.NODE_ENV === 'production'){
     app.use(express.static('client/build'))

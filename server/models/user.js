@@ -28,7 +28,11 @@ const userSchema = new mongoose.Schema({
         minlength:5
     },
     avatar:{
-        type:Buffer
+        name: String,
+        img:{
+            data: Buffer,
+            contentType: String
+        }
     },
     friends: [],
     tokens: [{
@@ -74,7 +78,7 @@ userSchema.statics.findFriend = async (email) =>{
     if(!user){
         throw new Error('there is no user by this email')
     }
-    return email
+    return user;
 }
 
 userSchema.pre("save",async function(next){

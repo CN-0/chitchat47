@@ -2,6 +2,7 @@ import React,{useState} from 'react'
 import {Link} from 'react-router-dom'
 import { connect } from 'react-redux'
 import * as actions from '../store/actions/index';
+import image2 from '../images/realtor-2.jpg'
 
 const Navbar = props =>{
     const [popup,setPopup] = useState(false);
@@ -13,8 +14,9 @@ const Navbar = props =>{
         props.setsidebarstatus(!props.presentStatus)
     }
     const avatar = e =>{
-        console.log(e.target.files[0].name)
-        console.log("haven't added the feature yet!!")
+        let formData = new FormData();
+        formData.append("file", e.target.files[0])
+        props.updateavatar(formData)
         e.target.value=null
     }
     const openPopup = ()=>{
@@ -58,6 +60,7 @@ const Navbar = props =>{
     if(props.isAuthenticated){
         content=(
             <div>
+                {props.myavatar?<img className="imgg" src={`data:image/${props.myavatar.img.contentType} ;base64,${props.myavatar.img.data}`} alt="2" />:< img src={image2} className="imgg" />}
                 <div className="dropdown">
                     <div className="logout dropdown-btn">Profile</div>
                     <div className="dropdown-content">
@@ -69,7 +72,7 @@ const Navbar = props =>{
                     </div>
                 </div>
                 <div className="logout">
-                    <a onClick={logout} href="#">Logout</a>
+                    <div onClick={logout}>Logout</div>
                 </div>
                 {popup?popupContent:null}
             </div>
@@ -96,14 +99,16 @@ const mapStateToProps = state => {
     return {
       mytoken: state.auth.token,
       isAuthenticated: state.auth.token !== null,
-      presentStatus : state.auth.sidebarStatus
+      presentStatus : state.auth.sidebarStatus,
+      myavatar: state.auth.avatar
     };
 }
 const mapDispatchToProps = dispatch => {
     return {
         trylogout: ()=>dispatch(actions.logout()),
         updatepassword: (password)=>dispatch(actions.updatePassword(password)),
-        setsidebarstatus : (statusData) => dispatch(actions.sidebarStatus(statusData))
+        setsidebarstatus : (statusData) => dispatch(actions.sidebarStatus(statusData)),
+        updateavatar : (data) => dispatch(actions.updataAvatar(data))
     };
 };
   

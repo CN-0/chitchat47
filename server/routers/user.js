@@ -69,7 +69,11 @@ router.post('/friends',auth, async (req,res)=>{
             throw new Error("user already exists!")
         }
         const friend  = await User.findFriend(req.body.friend)
-        await Chats.find({partcipients:[req.user.email,friend]}, async (err, chat) => {
+        delete friend.password
+        delete friend.tokens
+        delete friend.friends
+        console.log(friend)
+        await Chats.find({partcipients:[req.user.email,friend.email]}, async (err, chat) => {
             if(err){
                 throw new Error("an Error occured while adding friends")
             }
@@ -78,7 +82,7 @@ router.post('/friends',auth, async (req,res)=>{
             }else{
                 const chats = new Chats({
                     _id:id,
-                    partcipients:[friend,req.user.email]
+                    partcipients:[friend.email,req.user.email]
                 })
                 try{
                     await chats.save()
@@ -87,11 +91,13 @@ router.post('/friends',auth, async (req,res)=>{
                 }}
         })        
                 req.user.friends = await req.user.friends.concat({
-                    friend:friend,
-                    chat:id
+                    friend:friend.email,
+                    chat:id,
+                    friendUsername:friend.username,
+                    friendAvatar: friend.avatar
                 })
                 await req.user.save()
-        res.status(200).send(req.user.friends)
+        res.status(200).send(req.user)
     } catch (e) {
         res.status(500).json({msg:e.message})
     }

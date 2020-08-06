@@ -10,5 +10,7 @@ export {
     updatePassword,
     getMessages,
     setAuthRedirectPath,
-    authCheckState
+    authCheckState,
+    changeAvatar,
+    updataAvatar
 } from './auth';

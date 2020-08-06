@@ -9,6 +9,7 @@ const initialState = {
     messages:{chat:null,messages:null},
     newmessages:null,
     sidebarStatus:true,
+    avatar: null,
     error: null,
     loading: false,
     authRedirectPath: '/'
@@ -26,6 +27,7 @@ const authSuccess = (state, action) => {
         friends:action.friends,
         newmessages:action.newMessages,
         error: null,
+        avatar: action.avatar,
         loading: false,
      })
 };
@@ -54,6 +56,10 @@ const setNewMessages = (state, action) => {
     return updateObject(state, { newmessages: action.newmessages });
 };
 
+const changeAvatar = (state,action) =>{
+    return updateObject(state, { avatar: action.avatar });
+}
+
 const authLogout = (state, action) => {
     return updateObject(state, { token: null,
         email: null,
@@ -62,6 +68,7 @@ const authLogout = (state, action) => {
         messages:{chat:null,messages:null},
         newmessages:null,
         sidebarStatus:true,
+        avatar: null,
         error: null,
         loading: false,
         authRedirectPath: '/'
@@ -82,6 +89,7 @@ const reducer = ( state = initialState, action ) => {
         case actionTypes.ADD_FRIENDS: return addFriends(state, action);
         case actionTypes.SET_MESSAGES: return setMessages(state, action);
         case actionTypes.SET_NEW_MESSAGES: return setNewMessages(state, action);
+        case actionTypes.CHANGE_AVATAR: return changeAvatar(state, action);
         case actionTypes.SET_AUTH_REDIRECT_PATH: return setAuthRedirectPath(state,action);
         default:
             return state;

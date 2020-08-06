@@ -6,6 +6,7 @@ export const AUTH_LOGOUT = 'AUTH_LOGOUT';
 export const ADD_FRIENDS = 'ADD_FRIENDS';
 export const SET_MESSAGES = 'SET_MESSAGES';
 export const SET_NEW_MESSAGES = 'SET_NEW_MESSAGES';
+export const CHANGE_AVATAR = 'CHANGE_AVATAR';
 
 export const SET_SIDEBAR_STATUS = 'SET_SIDEBAR_STATUS';
 

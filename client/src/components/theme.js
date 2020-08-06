@@ -21,7 +21,7 @@ const darkTheme = {
 
 const applyTheme = nextTheme => {
     const theme = nextTheme === "dark" ? lightTheme : darkTheme;
-    Object.keys(theme).map(key => {
+    Object.keys(theme).forEach(key => {
       const value = theme[key];
       document.documentElement.style.setProperty(key, value);
     });

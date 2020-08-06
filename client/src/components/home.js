@@ -12,12 +12,12 @@ const Home = props =>{
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
     const [activeIndex,setActiveIndex] = useState("");
-    const { current: socket } = useRef(io.connect(window.location.hostname,{
-        query: `token=${props.mytoken}`
-    }))
-   /* const { current: socket } = useRef(io.connect("http://localhost:5000",{
+    /*const { current: socket } = useRef(io.connect(window.location.hostname,{
         query: `token=${props.mytoken}`
     }))*/
+    const { current: socket } = useRef(io.connect("http://localhost:5000",{
+        query: `token=${props.mytoken}`
+    }))
 
     useEffect(()=>{
         let friends=[]
@@ -32,6 +32,7 @@ const Home = props =>{
         return () => {
             socket.disconnect()
         }
+        // eslint-disable-next-line
     },[])
 
     const newChatMessage = data =>{
@@ -99,9 +100,9 @@ const Home = props =>{
                     let className = activeIndex === index ? 'activeElement' : 'sidebar__chat';
                     return(
                         <div key={index} onClick={()=>chatClicked(index,friend)} className={className}>
-                            <img className="imgg" src={image2} alt="2" />
+                            {friend.friendAvatar?<img className="imgg" src={`data:image/${friend.friendAvatar.img.contentType} ;base64,${friend.friendAvatar.img.data}`} alt="2" />:< img src={image2} className="imgg" alt="pp" />}
                             <h3 className="heading-3">
-                                {friend.friend}
+                                {friend.friendUsername}
                             </h3>
                             {props.mynewmessages[friend.chat]>0?<div className="new-messages">{props.mynewmessages[friend.chat]}</div>:null}
                         </div>

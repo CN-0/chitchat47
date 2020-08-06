@@ -14,6 +14,7 @@ const App = props => {
   const[myerror, setMyerror] = useState(props.userError)
   useEffect(() => {
     props.onTryAutoSignup()
+    // eslint-disable-next-line
   },[])
 
   useEffect(()=>{
