@@ -41,7 +41,7 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage }).single("file");
 
-app.post('/avatar',auth,upload,async (req, res) => {
+app.put('/avatar',auth,upload,async (req, res) => {
   var newImg = fs.readFileSync(req.file.path);
   var encImg = newImg.toString('base64');
   var newItem = {
@@ -71,6 +71,7 @@ io.on("connection", socket => {
   })
 
   socket.on("inputChatMessage", async(data) => {
+    console.log("received")
     const idd = new mongoose.Types.ObjectId()
     const message = new Message({
         _id:idd,

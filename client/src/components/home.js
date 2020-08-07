@@ -4,7 +4,9 @@ import Chat from "./chat";
 import * as actions from '../store/actions/index';
 import { connect } from 'react-redux';
 import applyTheme from './theme'
-import { socket } from './socket';
+
+import io from "socket.io-client";
+
 
 const Home = props =>{
     const [currentTheme, setTheme] = React.useState("light");
@@ -16,6 +18,8 @@ const Home = props =>{
         query: `token=${props.mytoken}`
     }))*/
     //const { current: socket } = useRef()
+    
+     const socket = io.connect('http://localhost:5000',{query: `token=${props.mytoken}`});//window.location.hostname
 
     useEffect(()=>{
         
@@ -35,6 +39,7 @@ const Home = props =>{
     },[])
 
     const newChatMessage = data =>{
+        console.log("send")
         socket.emit("inputChatMessage",data)
     }
 
