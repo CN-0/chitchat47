@@ -1,10 +1,10 @@
-import React,{useState,useEffect,useRef} from 'react'
-import io from "socket.io-client";
+import React,{useState,useEffect} from 'react'
 import image2 from '../images/realtor-2.jpg'
 import Chat from "./chat";
 import * as actions from '../store/actions/index';
 import { connect } from 'react-redux';
 import applyTheme from './theme'
+import { socket } from './socket';
 
 const Home = props =>{
     const [currentTheme, setTheme] = React.useState("light");
@@ -12,14 +12,13 @@ const Home = props =>{
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
     const [activeIndex,setActiveIndex] = useState("");
-    const { current: socket } = useRef(io.connect(window.location.hostname,{
-        query: `token=${props.mytoken}`
-    }))
-    /*const { current: socket } = useRef(io.connect("http://localhost:5000",{
+    /*const { current: socket } = useRef(io.connect(window.location.hostname,{
         query: `token=${props.mytoken}`
     }))*/
+    //const { current: socket } = useRef()
 
     useEffect(()=>{
+        
         let friends=[]
         props.myfriends.forEach(friend=>{
             friends.push(friend.chat)

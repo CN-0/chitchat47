@@ -147,7 +147,10 @@ export const login = (loginData) => {
                 localStorage.setItem('ccemail', response.data.user.email);
                 localStorage.setItem('ccusername', response.data.user.username);
                 localStorage.setItem('ccfriends', JSON.stringify(response.data.user.friends));
-                localStorage.setItem('ccavatar', JSON.stringify(response.data.user.avatar));
+                const avatar = response.data.user.avatar
+                if(avatar){
+                    localStorage.setItem('ccavatar', JSON.stringify(avatar))
+                }
                 dispatch(authSuccess(response.data.token, response.data.user.email, response.data.user.username, response.data.user.friends, response.data.user.avatar));
             })
             .catch(err => {
@@ -168,9 +171,7 @@ export const register = (registerData) => {
                 localStorage.setItem('cctoken', response.data.token);
                 localStorage.setItem('ccemail', response.data.user.email);
                 localStorage.setItem('ccusername', response.data.user.username);
-                localStorage.setItem('ccfriends', JSON.stringify(response.data.user.friends));
-                localStorage.setItem('ccavatar', JSON.stringify(response.data.user.avatar));
-                dispatch(authSuccess(response.data.token, response.data.user.email, response.data.user.username, response.data.user.friends,response.data.user.avatar));
+                dispatch(authSuccess(response.data.token, response.data.user.email, response.data.user.username));
             })
             .catch(err => {
                 if(err.response.data.msg.includes("username")){
@@ -207,8 +208,8 @@ export const updataAvatar = avatar =>{
     return dispatch=>{
         dispatch(authStart())
         Axios.post('/avatar',avatar,{headers:{Authorization:`Bearer ${token}`,'content-type': 'multipart/form-data'}}).then(response=>{
-            localStorage.setItem('ccavatar', JSON.stringify(response.data.data.avatar));
-            dispatch(changeAvatar(response.data.data.avatar))
+            localStorage.setItem('ccavatar', JSON.stringify(response.data));
+            dispatch(changeAvatar(response.data))
         }).catch(err=>{
             console.log(err)
         })

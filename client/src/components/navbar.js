@@ -60,7 +60,7 @@ const Navbar = props =>{
     if(props.isAuthenticated){
         content=(
             <div>
-                {props.myavatar?<img className="imgg" src={`data:image/${props.myavatar.img.contentType} ;base64,${props.myavatar.img.data}`} alt="2" />:< img src={image2} className="imgg" />}
+                {props.myavatar?<img className="imgg" src={`data:image/${props.myavatar.img.contentType} ;base64,${props.myavatar.img.data}`} alt="2" />:< img src={image2} className="imgg" alt="pp" />}
                 <div className="dropdown">
                     <div className="logout dropdown-btn">Profile</div>
                     <div className="dropdown-content">

@@ -42,13 +42,23 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage }).single("file");
 
 app.post('/avatar',auth,upload,async (req, res) => {
-  req.user["avatar"] = {name: req.file.filename, img:{data: fs.readFileSync(path.join(__dirname , './uploads' , req.file.filename)), contentType: req.file.mimetype}}
+  var newImg = fs.readFileSync(req.file.path);
+  var encImg = newImg.toString('base64');
+  var newItem = {
+      name: req.file.filename,
+      img:{
+        data: Buffer.from(encImg, 'base64'),
+        contentType: req.file.mimetype
+      }
+  };
+  req.user["avatar"] = newItem
   await req.user.save()
-  fs.unlink(__dirname+ `/uploads/${req.file.filename}`, (err) => {
+  fs.unlink(req.file.path, (err) => {
     if (err) throw err;
-  });  
-  const data = req.user
-  return res.send({ data });
+  });
+  const buffer = Buffer.from(req.user.avatar.img.data);
+  const base64String = buffer.toString('base64')
+  return res.send({name:req.user.avatar.name,img:{data:base64String,contentType:req.user.avatar.img.contentType}});
 });
 
 io.on("connection", socket => {
