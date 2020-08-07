@@ -19,7 +19,7 @@ const Home = props =>{
     }))*/
     //const { current: socket } = useRef()
     
-     const socket = io.connect('http://localhost:5000',{query: `token=${props.mytoken}`});//window.location.hostname
+     const socket = io.connect(window.location.hostname,{query: `token=${props.mytoken}`});//window.location.hostname
 
     useEffect(()=>{
         
