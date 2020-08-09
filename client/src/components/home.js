@@ -1,13 +1,10 @@
 import React,{useState,useEffect} from 'react'
+import io from 'socket.io-client';
 import image2 from '../images/realtor-2.jpg'
 import Chat from "./chat";
 import * as actions from '../store/actions/index';
 import { connect } from 'react-redux';
 import applyTheme from './theme'
-
-const io = require('socket.io-client');
-const mytoken = localStorage.getItem("cctoken")
-const socket = io.connect('',{query: `token=${mytoken}`});//window.location.hostname
 
 const Home = props =>{
     const [currentTheme, setTheme] = React.useState("light");
@@ -16,6 +13,7 @@ const Home = props =>{
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
     const [activeIndex,setActiveIndex] = useState("");    
+    const socket = io.connect(window.location.hostname,{query: `token=${props.mytoken}`});//window.location.hostname
      
     useEffect(()=>{
         socket.emit("addSocket",props.myemail)
