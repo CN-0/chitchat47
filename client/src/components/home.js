@@ -7,7 +7,7 @@ import applyTheme from './theme'
 
 const io = require('socket.io-client');
 const mytoken = localStorage.getItem("cctoken")
-const socket = io.connect(window.location.hostname,{query: `token=${mytoken}`});//window.location.hostname
+const socket = io.connect('',{query: `token=${mytoken}`});//window.location.hostname
 
 const Home = props =>{
     const [currentTheme, setTheme] = React.useState("light");
