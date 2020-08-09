@@ -7,27 +7,36 @@ import { connect } from 'react-redux';
 import applyTheme from './theme'
 
 const Home = props =>{
+    const [socket, setSocket] = useState(null);
     const [currentTheme, setTheme] = React.useState("light");
     const [checked,setChecked] = useState(false);
     const [messageReceived,setReceivedMessage] = useState(null)
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
-    const [activeIndex,setActiveIndex] = useState("");    
-    const socket = io.connect(window.location.hostname,{query: `token=${props.mytoken}`});//window.location.hostname
+    const [activeIndex,setActiveIndex] = useState("");
      
+    useEffect(() => {
+        setSocket(io('',{query: `token=${props.mytoken}`}));
+        // eslint-disable-next-line
+    }, []);
     useEffect(()=>{
-        socket.emit("addSocket",props.myemail)
-        socket.on("messagePosted",receiveddata=>{ 
-            setReceivedMessage(receiveddata)
-        })
+        if(socket){
+            socket.emit("addSocket",props.myemail)
+            socket.on("messagePosted",receiveddata=>{ 
+                setReceivedMessage(receiveddata)
+            })
+        }
         return () => {
-            socket.disconnect()
+            if(socket){
+                socket.disconnect()
+            }
         }
         // eslint-disable-next-line
-    },[])
+    },[socket])
 
     useEffect(()=>{
         if(messageReceived){
+            console.log(messageReceived)
             props.postmessages(messageReceived,openChat,props.mymessages,props.mynewmessages)
         }
         // eslint-disable-next-line
