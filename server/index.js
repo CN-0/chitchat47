@@ -1,18 +1,15 @@
 const express = require('express');
-var fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose')
-const Message = require('./models/message')
-const auth = require('./middleware/auth')
-const Chats = require('./models/chats')
-const User = require('./models/user')
-var multer = require('multer');
-const app = express();
-const path = require('path');
 const socketioJwt   = require('socketio-jwt')
 require('./db/mongoose');
 const userRouter = require('./routers/user');
+const chatRouter=  require('./routers/chat')
+const Message = require('./models/message')
+const User = require('./models/user')
+const app = express();
 
 const PORT = process.env.PORT || 5000
 
@@ -29,50 +26,19 @@ io.use(socketioJwt.authorize({
 app.use(express.json())
 app.use(cors())
 app.use('/users',userRouter)
+app.use('/chat',chatRouter)
 
-var storage = multer.diskStorage({ 
-  destination: (req, file, cb) => { 
-      cb(null, './server/uploads') 
-  }, 
-  filename: (req, file, cb) => { 
-      cb(null, file.originalname) 
-  } 
-}); 
 
-var upload = multer({ storage: storage }).single("file");
-
-app.put('/avatar',auth,upload,async (req, res) => {
-  var newImg = fs.readFileSync(req.file.path);
-  var encImg = newImg.toString('base64');
-  var newItem = {
-      name: req.file.filename,
-      img:{
-        data: Buffer.from(encImg, 'base64'),
-        contentType: req.file.mimetype
-      }
-  };
-  req.user["avatar"] = newItem
-  await req.user.save()
-  fs.unlink(req.file.path, (err) => {
-    if (err) throw err;
-  });
-  const buffer = Buffer.from(req.user.avatar.img.data);
-  const base64String = buffer.toString('base64')
-  return res.send({name:req.user.avatar.name,img:{data:base64String,contentType:req.user.avatar.img.contentType}});
-});
 
 io.on("connection", socket => {
-  socket.on("addSocket",async (chats)=>{
-      for (let chat  of chats) {
-        let cha = await Chats.findOne({_id:chat})
-        let sockets = cha.sockets
-        let chaty = await Chats.findOneAndUpdate({_id:chat},{sockets:[...sockets,socket.id]},{new:true})
-      }
+  socket.on("addSocket",async (email) => {
+      await User.findOneAndUpdate({email:email},{socket:socket.id},{new:true})
   })
 
   socket.on("inputChatMessage", async(data) => {
-    console.log("received")
     const idd = new mongoose.Types.ObjectId()
+    const sender = data.sender
+    let friendSocket 
     const message = new Message({
         _id:idd,
         content:data.content,
@@ -82,26 +48,33 @@ io.on("connection", socket => {
     })
     try{
         await message.save()
-        let messages = await Message.find({chat:data.chat})
-        let chat = await Chats.findOne({_id:data.chat})
-        chat.sockets.forEach(socket => {
-          io.to(socket).emit('messagePosted', {
-            chat:data.chat,
-            messages:messages
-          });
-        });
+        let friend = await User.findOne({email:data.recipient})
+        friendSocket = friend.socket
+         if(friend.newMessages){
+            if(friend.newMessages[sender]){
+              friend.newMessages[sender] = friend.newMessages[sender] + 1
+              friend.markModified('newMessages')
+            friend.save()
+            }else{
+              friend.newMessages[sender] = 1
+              friend.markModified('newMessages')
+              friend.save()
+            }
+         }else{
+           friend.newMessages = {}
+           friend.newMessages[sender] = 1
+           friend.markModified('newMessages')
+           friend.save()
+         }
+         if(friendSocket){
+          io.to(friendSocket).emit('messagePosted',data)
+        }
     }catch(e){
-        console.log('inputmsg', e)
+        
     } 
   })
   socket.on('disconnect',async () => {
-    Chats.find({sockets:socket.id}, async (err, memes) => {
-      console.log('disconnect',err)
-      for(let meme of memes){
-        meme.sockets = await meme.sockets.filter(id=>id !== socket.id)
-        await meme.save()
-      }
-    });
+    await User.findOneAndUpdate({socket:socket.id},{socket:null})
 })
 })
 

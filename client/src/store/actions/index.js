@@ -9,8 +9,6 @@ export {
     sidebarStatus,
     updatePassword,
     getMessages,
-    setAuthRedirectPath,
     authCheckState,
-    changeAvatar,
     updataAvatar
 } from './auth';

@@ -1,21 +1,27 @@
 const express = require('express')
+const fs =require('fs')
+var multer = require('multer');
 const User = require('../models/user')
 const auth = require('../middleware/auth')
-const Chats = require('../models/chats')
-const Message = require('../models/message')
-const mongoose = require('mongoose')
 
-const router  =new express.Router()
+const router  = new express.Router()
 
-router.get('/friends',auth,async (req,res)=>{
-    res.status(201).send(req.user.friends)
-})
+let storage = multer.diskStorage({ 
+    destination: (req, file, cb) => { 
+        cb(null, './server/uploads') 
+    }, 
+    filename: (req, file, cb) => { 
+        cb(null, file.originalname) 
+    } 
+}); 
+  
+let upload = multer({ storage: storage }).single("file");
 
 router.post('/register',async (req,res)=>{
     const user = new User(req.body)
     try{
         await user.save()
-        const token =await  user.generateAuthToken()
+        const token =await user.generateAuthToken()
         res.status(201).send({user,token})
     }catch(e){
         res.status(400).json({msg:e.message})
@@ -24,10 +30,11 @@ router.post('/register',async (req,res)=>{
 })
 
 router.post('/login',async (req,res)=>{
-    try{ 
+    try{
         const user = await User.findUser(req.body.email,req.body.password)
+        const userData = await user.populate('friends','avatar email username').execPopulate()
         const token = await user.generateAuthToken()
-        res.status(200).send({user,token})
+        res.status(200).send({userData,token})
     }catch(e){
         res.status(409).json({msg:e.message})
     }
@@ -39,102 +46,9 @@ router.post('/logout',auth, async (req,res)=>{
         req.user.tokens = req.user.tokens.filter((token)=>{
             return token.token !== req.token
         })
+        req.user.newMessages = req.body.newMessages
         await req.user.save()
         res.status(200).json({msg:"you are successfully logged-out"})
-    } catch (e) {
-        res.status(500).json({msg:e.message})
-    }
-})
-
-router.get('/friends',auth,async(req,res)=>{
-    try{
-    res.status(200).send(req.user.friends)
-    }catch(e){
-        res.status(500).json({msg:e.message})
-    }
-})
-
-router.post('/friends',auth, async (req,res)=>{
-    let id = new mongoose.Types.ObjectId()
-    
-    try {
-        if(req.body.friend===req.user.email){
-            throw new Error("you cant add yourself")
-        }
-        let friendsArray = []
-        req.user.friends.forEach(friend=>{
-            friendsArray.push(friend.friend)
-        })
-        if(friendsArray.includes(req.body.friend)){
-            throw new Error("user already exists!")
-        }
-        const friend  = await User.findFriend(req.body.friend)
-        delete friend.password
-        delete friend.tokens
-        delete friend.friends
-        console.log(friend)
-        await Chats.find({partcipients:[req.user.email,friend.email]}, async (err, chat) => {
-            if(err){
-                throw new Error("an Error occured while adding friends")
-            }
-            if(chat.length>0){
-                id = chat[0]._id
-            }else{
-                const chats = new Chats({
-                    _id:id,
-                    partcipients:[friend.email,req.user.email]
-                })
-                try{
-                    await chats.save()
-                }catch(e){
-                    throw new Error("an Error occured while saving friends")
-                }}
-        })        
-                req.user.friends = await req.user.friends.concat({
-                    friend:friend.email,
-                    chat:id,
-                    friendUsername:friend.username,
-                    friendAvatar: friend.avatar
-                })
-                await req.user.save()
-        res.status(200).send(req.user)
-    } catch (e) {
-        res.status(500).json({msg:e.message})
-    }
-})
-router.get('/chat/:id',auth, async(req,res)=>{
-    try {
-        chatID = req.params.id
-        let messages = await Message.find({chat:chatID})
-        res.status(200).send({
-            chat:chatID,
-            messages:messages
-        })
-    } catch (e) {
-        res.status(500).json({msg:e.message})
-    }
-})
-
-router.post('/chat',auth, async(req,res)=>{
-    try {
-        const idd = new mongoose.Types.ObjectId()
-        const message = new Message({
-            _id:idd,
-            content:req.body.content,
-            chat:req.body.chat,
-            sender:req.body.sender,
-            recipient:req.body.recipient
-        })
-        try{
-            await message.save()
-            let messages = await Message.find({chat:req.body.chat})
-            res.status(201).send({
-                chat:req.body.chat,
-                messages:messages
-            })
-        }catch(e){
-            throw new Error("an Error occured while creating message")
-        }  
     } catch (e) {
         res.status(500).json({msg:e.message})
     }
@@ -158,6 +72,28 @@ router.delete('/delete',auth, async(req,res)=>{
         res.status(500).send()
     }
 })
+  
+router.put('/avatar',auth,upload,async (req, res) => {
+    try {
+        var newImg = fs.readFileSync(req.file.path);
+        var encImg = newImg.toString('base64');
+        var newItem = {
+            name: req.file.filename,
+            image: Buffer.from(encImg, 'base64'),
+            contentType: req.file.mimetype
+        };
+        req.user["avatar"] = newItem
+        await req.user.save()
+        fs.unlink(req.file.path, (err) => {
+            if (err) throw err;
+        });
+        const buffer = Buffer.from(req.user.avatar.image);
+        const base64StringImage = buffer.toString('base64')
+        return res.send({...req.user.avatar,image:base64StringImage});
+    } catch (error) {
+        res.status(400).json({msg:"an error occured while adding image!"})
+    }
+});
 
 module.exports = router
 

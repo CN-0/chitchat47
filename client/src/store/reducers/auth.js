@@ -5,14 +5,13 @@ const initialState = {
     token: null,
     email: null,
     username:null,
-    friends:null,
+    friends:[],
     messages:{chat:null,messages:null},
-    newmessages:null,
     sidebarStatus:true,
+    newMessages: {},
     avatar: null,
     error: null,
-    loading: false,
-    authRedirectPath: '/'
+    loading: false
 };
 
 const authStart = ( state, action ) => {
@@ -25,7 +24,7 @@ const authSuccess = (state, action) => {
         email: action.email,
         username:action.username,
         friends:action.friends,
-        newmessages:action.newMessages,
+        newMessages:action.newMessages,
         error: null,
         avatar: action.avatar,
         loading: false,
@@ -53,7 +52,7 @@ const setMessages = (state, action) => {
 };
 
 const setNewMessages = (state, action) => {
-    return updateObject(state, { newmessages: action.newmessages });
+    return updateObject(state, { newMessages: action.newmessages });
 };
 
 const changeAvatar = (state,action) =>{
@@ -65,8 +64,7 @@ const authLogout = (state, action) => {
         email: null,
         username:null,
         friends:null,
-        messages:{chat:null,messages:null},
-        newmessages:null,
+        messages:null,
         sidebarStatus:true,
         avatar: null,
         error: null,

@@ -7,7 +7,7 @@ import image2 from '../images/realtor-2.jpg'
 const Navbar = props =>{
     const [popup,setPopup] = useState(false);
     const logout = () =>{
-        props.trylogout()
+        props.trylogout(props.mynewmessages)
     }
 
     const changeStatus = ()=>{
@@ -60,9 +60,9 @@ const Navbar = props =>{
     if(props.isAuthenticated){
         content=(
             <div>
-                {props.myavatar?<img className="imgg" src={`data:image/${props.myavatar.img.contentType} ;base64,${props.myavatar.img.data}`} alt="2" />:< img src={image2} className="imgg" alt="pp" />}
+                {props.myavatar?<img className="imgg" src={`data:image/${props.myavatar.contentType} ;base64,${props.myavatar.image}`} alt="2" />:< img src={image2} className="imgg" alt="pp" />}
                 <div className="dropdown">
-                    <div className="logout dropdown-btn">Profile</div>
+                    <div className="logout dropdown-btn"><div>Profile</div></div>
                     <div className="dropdown-content">
                         <label className="dropdown-content-btn">avatar
                         <input onChange={avatar} id="avatar" style={{display:"none"}} type="file" accept="image/*" />
@@ -78,7 +78,6 @@ const Navbar = props =>{
             </div>
         )
     }
-
     return(
     <div className="nav">
         <div>
@@ -100,12 +99,13 @@ const mapStateToProps = state => {
       mytoken: state.auth.token,
       isAuthenticated: state.auth.token !== null,
       presentStatus : state.auth.sidebarStatus,
-      myavatar: state.auth.avatar
+      myavatar: state.auth.avatar,
+      mynewmessages : state.auth.newMessages
     };
 }
 const mapDispatchToProps = dispatch => {
     return {
-        trylogout: ()=>dispatch(actions.logout()),
+        trylogout: (logoutData)=>dispatch(actions.logout(logoutData)),
         updatepassword: (password)=>dispatch(actions.updatePassword(password)),
         setsidebarstatus : (statusData) => dispatch(actions.sidebarStatus(statusData)),
         updateavatar : (data) => dispatch(actions.updataAvatar(data))

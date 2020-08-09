@@ -5,32 +5,22 @@ import * as actions from '../store/actions/index';
 import { connect } from 'react-redux';
 import applyTheme from './theme'
 
-import io from "socket.io-client";
-
+const io = require('socket.io-client');
+const mytoken = localStorage.getItem("cctoken")
+const socket = io.connect(window.location.hostname,{query: `token=${mytoken}`});//window.location.hostname
 
 const Home = props =>{
     const [currentTheme, setTheme] = React.useState("light");
     const [checked,setChecked] = useState(false);
+    const [messageReceived,setReceivedMessage] = useState(null)
     const [popup,setPopup] = useState(false);
     const [openChat,setOpenChat] = useState({});
-    const [activeIndex,setActiveIndex] = useState("");
-    /*const { current: socket } = useRef(io.connect(window.location.hostname,{
-        query: `token=${props.mytoken}`
-    }))*/
-    //const { current: socket } = useRef()
-    
-     const socket = io.connect(window.location.hostname,{query: `token=${props.mytoken}`});//window.location.hostname
-
+    const [activeIndex,setActiveIndex] = useState("");    
+     
     useEffect(()=>{
-        
-        let friends=[]
-        props.myfriends.forEach(friend=>{
-            friends.push(friend.chat)
-        })
-        socket.emit("addSocket",friends)
-        socket.on("messagePosted",data=>{
-            props.postmessages(data)
-           
+        socket.emit("addSocket",props.myemail)
+        socket.on("messagePosted",receiveddata=>{ 
+            setReceivedMessage(receiveddata)
         })
         return () => {
             socket.disconnect()
@@ -38,9 +28,16 @@ const Home = props =>{
         // eslint-disable-next-line
     },[])
 
+    useEffect(()=>{
+        if(messageReceived){
+            props.postmessages(messageReceived,openChat,props.mymessages,props.mynewmessages)
+        }
+        // eslint-disable-next-line
+    },[messageReceived])
+
     const newChatMessage = data =>{
-        console.log("send")
         socket.emit("inputChatMessage",data)
+        props.postmessages(data,openChat,props.mymessages,"direct")
     }
 
     const openPopup = () =>{
@@ -57,9 +54,9 @@ const Home = props =>{
     }
 
     const chatClicked = (index, activeFriend) =>{
-        props.getmessages(activeFriend.chat)
+        props.getmessages(activeFriend.email)
         setOpenChat(activeFriend)
-        props.removemessages(activeFriend.chat)
+        props.removemessages(props.mynewmessages ,activeFriend.email)
         props.setsidebarstatus(false)
         setActiveIndex(index)
         
@@ -103,18 +100,18 @@ const Home = props =>{
                 {props.myfriends?props.myfriends.map((friend,index)=>{
                     let className = activeIndex === index ? 'activeElement' : 'sidebar__chat';
                     return(
-                        <div key={index} onClick={()=>chatClicked(index,friend)} className={className}>
-                            {friend.friendAvatar?<img className="imgg" src={`data:image/${friend.friendAvatar.img.contentType} ;base64,${friend.friendAvatar.img.data}`} alt="2" />:< img src={image2} className="imgg" alt="pp" />}
+                        <div key={index} onClick={()=>chatClicked(index,friend)}className={className}>
+                            {friend.avatar?<img className="imgg" src={`data:image/${friend.avatar.contentType} ;base64,${friend.avatar.image}`} alt="2" />:< img src={image2} className="imgg" alt="pp" />}
                             <h3 className="heading-3">
-                                {friend.friendUsername}
+                                {friend.username}
                             </h3>
-                            {props.mynewmessages[friend.chat]>0?<div className="new-messages">{props.mynewmessages[friend.chat]}</div>:null}
+                            {props.mynewmessages&&props.mynewmessages[friend.email]>0?<div className="new-messages" style={{marginLeft:"auto",marginRight:"35px"}}>{props.mynewmessages[friend.email]}</div>:null}
                         </div>
                     )
                 }):null}
             </div>
             <div className={props.mysidebarstatus?"chat-page-main":"chat-page-main chat-page-main-open"}>
-            {openChat.chat?<Chat openChat ={openChat} newMessage={(data)=>newChatMessage(data)} />:(<div className="chat-page">
+            {openChat.email?<Chat openChat ={openChat} newMessage={(data)=>newChatMessage(data)} />:(<div className="chat-page">
             <h2 className="welcome" >Welcome to Chit Chat</h2>
         </div>)}
             </div>
@@ -124,12 +121,14 @@ const Home = props =>{
     )
 }
 
+
 const mapStateToProps = state => {
     return {
       myfriends: state.auth.friends,
       mysidebarstatus: state.auth.sidebarStatus,
-      mynewmessages:state.auth.newmessages,
+      mynewmessages:state.auth.newMessages,
       mytoken: state.auth.token,
+      mymessages : state.auth.messages,
       myemail:state.auth.email
     };
 };
@@ -138,8 +137,8 @@ const mapDispatchToProps = dispatch => {
     return {
         postfriend: (postData) => dispatch(actions.postFriends(postData)),
         getmessages: (getData) => dispatch(actions.getMessages(getData)),
-        postmessages: (postData) => dispatch(actions.postMessages(postData)),
-        removemessages: (removeData) => dispatch(actions.removeMessages(removeData)),
+        postmessages: (postData,openchat,messages,newmessages) => dispatch(actions.postMessages(postData,openchat,messages,newmessages)),
+        removemessages: (oldData,removeData) => dispatch(actions.removeMessages(oldData,removeData)),
         setsidebarstatus : (statusData) => dispatch(actions.sidebarStatus(statusData))
     };
 };

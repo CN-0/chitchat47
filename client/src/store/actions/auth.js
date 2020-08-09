@@ -8,31 +8,18 @@ export const authStart = () => {
     };
 };
 
-export const authSuccess = (token, email, username, friends, avatar) => {
-    let newMessages = {}
-    if(friends){
-        friends.forEach(friend=>{
-            newMessages[friend.chat] = 0
-        })
-    }
-    localStorage.setItem('ccnewmessages', JSON.stringify(newMessages));
+export const authSuccess = (token, email, username, friends, avatar,newMessages) => {
     return {
         type: actionTypes.AUTH_SUCCESS,
         token: token,
         email: email,
         username: username,
         friends:friends,
-        newMessages:newMessages,
-        avatar: avatar
+        avatar: avatar,
+        newMessages:newMessages
     };
 };
 
-export const addFriends = (friends) => {
-    return {
-        type: actionTypes.ADD_FRIENDS,
-        friends:friends,
-    };
-};
 export const setMessages = (messages) => {
     return {
         type: actionTypes.SET_MESSAGES,
@@ -54,28 +41,23 @@ export const authFail = (error) => {
         error: error
     };
 };
-export const changeAvatar = (avatar) => {
-    return {
-        type: actionTypes.CHANGE_AVATAR,
-        avatar: avatar
-    };
-};
 
-export const logout = () => {
-    const token = localStorage.getItem("cctoken") 
-    Axios.post('/users/logout',{logout:"logout"},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
-        localStorage.removeItem('cctoken');
-        localStorage.removeItem('ccemail');
-        localStorage.removeItem('ccusername');
-        localStorage.removeItem('ccfriends');
-        localStorage.removeItem('ccnewmessages');
-        localStorage.removeItem('ccavatar');
-        
-    }).catch(err=>{
-        console.log(err.response.data.msg)
-    })
-    return {
-        type: actionTypes.AUTH_LOGOUT
+export const logout = (data) => {
+    return dispatch => {
+        const token = localStorage.getItem("cctoken")
+        Axios.post('/users/logout',{newMessages:data},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
+            localStorage.removeItem('cctoken');
+            localStorage.removeItem('ccemail');
+            localStorage.removeItem('ccusername');
+            localStorage.removeItem('ccfriends');
+            localStorage.removeItem('ccavatar');
+            localStorage.removeItem('ccnewmessages');
+        }).catch(err=>{
+            console.log(err.response.data.msg)
+        })
+        dispatch({
+            type: actionTypes.AUTH_LOGOUT
+        })
     }
 };
 
@@ -90,11 +72,18 @@ export const postFriends = data =>{
     return dispatch => {
         dispatch(authStart())
         const token = localStorage.getItem("cctoken") 
-        Axios.post('/users/friends',{friend:data},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
-            localStorage.setItem('ccfriends', JSON.stringify(response.data.friends));   
-            dispatch(addFriends(response.data.friends))
+        Axios.post('/chat/friends',{friend:data},{headers:{Authorization:`Bearer ${token}`}}).then(response=>{
+            const avatar = response.data.avatar.image?response.data.avatar:null
+            const fri = localStorage.getItem('ccfriends')
+            const friends = fri?JSON.parse(fri):[];
+            const newfriends = [...friends,{...response.data,avatar:avatar}]
+            localStorage.setItem('ccfriends', JSON.stringify(newfriends));
+            dispatch({
+                type: actionTypes.ADD_FRIENDS,
+                friends:newfriends,
+            })
         }).catch(err=>{
-            dispatch(authFail(err))
+            dispatch(authFail(err.response.data.msg))
         })
     }
 }
@@ -103,8 +92,7 @@ export const getMessages = data =>{
     return dispatch => {
         dispatch(authStart())
         let ccktoken = localStorage.getItem("cctoken")
-        Axios.get(`/users/chat/${data}`,{headers:{Authorization:`Bearer ${ccktoken}`}}).then(response=>{
-            localStorage.setItem('ccmessages', JSON.stringify(response.data));   
+        Axios.get(`/chat/chat/${data}`,{headers:{Authorization:`Bearer ${ccktoken}`}}).then(response=>{  
             dispatch(setMessages(response.data))
         }).catch(err=>{
             dispatch(authFail(err.response.data.msg))
@@ -112,29 +100,32 @@ export const getMessages = data =>{
     }
 }
 
-export const postMessages = (data) =>{
-    const openChat = JSON.parse(localStorage.getItem('ccmessages'))
-    const oldmessages = JSON.parse(localStorage.getItem('ccnewmessages'))
+export const postMessages = (data,openchat,messages,newmessages) =>{
     return dispatch => {
-        if(openChat && openChat.chat === data.chat){
-                localStorage.setItem('ccmessages', JSON.stringify(data));   
-                dispatch(setMessages(data))
+        if(newmessages==="direct"||data.sender===openchat.email){
+            dispatch(setMessages({...messages,messages:[...messages.messages,data]}))
         }else{
-            oldmessages[data.chat] = oldmessages[data.chat] + 1
-            localStorage.setItem('ccnewmessages', JSON.stringify(oldmessages));
-            dispatch(setNewMessages(oldmessages))
+            let newMessage={}
+            const sender = data.sender
+            if(newmessages&&newmessages[sender]){
+                newMessage[sender] = newmessages[sender] + 1
+                localStorage.setItem('ccnewmessages', JSON.stringify({...newmessages,...newMessage}))
+            }else{
+                newMessage[sender] = 1
+                localStorage.setItem('ccnewmessages', JSON.stringify(newMessage))
+            }
+            newmessages?dispatch(setNewMessages({...newmessages,...newMessage})):dispatch(setNewMessages(newMessage))
+            
         }
-        
-        
     }
 }
-export const removeMessages = data =>{
-    const oldmessages = JSON.parse(localStorage.getItem('ccnewmessages'))
+export const removeMessages = (oldmessages,data) =>{
     return dispatch => {
+        if(oldmessages){
         oldmessages[data] = 0
         localStorage.setItem('ccnewmessages', JSON.stringify(oldmessages));
         dispatch(setNewMessages(oldmessages))
-        
+        }
     }
 }
 
@@ -146,14 +137,21 @@ export const login = (loginData) => {
         Axios.post(url, loginData)
             .then(response => {
                 localStorage.setItem('cctoken', response.data.token);
-                localStorage.setItem('ccemail', response.data.user.email);
-                localStorage.setItem('ccusername', response.data.user.username);
-                localStorage.setItem('ccfriends', JSON.stringify(response.data.user.friends));
-                const avatar = response.data.user.avatar
+                localStorage.setItem('ccemail', response.data.userData.email);
+                localStorage.setItem('ccusername', response.data.userData.username);
+                const newmessages = response.data.userData.newMessages
+                if(newmessages){
+                    localStorage.setItem('ccnewmessages', JSON.stringify(newmessages))
+                }
+                const friends = response.data.userData.friends
+                if(friends.length>0){
+                    localStorage.setItem('ccfriends', JSON.stringify(friends))
+                }
+                const avatar = response.data.userData.avatar
                 if(avatar){
                     localStorage.setItem('ccavatar', JSON.stringify(avatar))
                 }
-                dispatch(authSuccess(response.data.token, response.data.user.email, response.data.user.username, response.data.user.friends, response.data.user.avatar));
+                dispatch(authSuccess(response.data.token, response.data.userData.email, response.data.userData.username, response.data.userData.friends, response.data.userData.avatar, response.data.userData.newMessages));
             })
             .catch(err => {
                 dispatch(authFail(err.response.data.msg))
@@ -209,34 +207,33 @@ export const updataAvatar = avatar =>{
     const token = localStorage.getItem("cctoken")
     return dispatch=>{
         dispatch(authStart())
-        Axios.put('/avatar',avatar,{headers:{Authorization:`Bearer ${token}`,'content-type': 'multipart/form-data'}}).then(response=>{
+        Axios.put('/users/avatar',avatar,{headers:{Authorization:`Bearer ${token}`,'content-type': 'multipart/form-data'}}).then(response=>{
             localStorage.setItem('ccavatar', JSON.stringify(response.data));
-            dispatch(changeAvatar(response.data))
+            dispatch({
+                type: actionTypes.CHANGE_AVATAR,
+                avatar: response.data
+            })
         }).catch(err=>{
             console.log(err)
         })
     }
 }
 
-export const setAuthRedirectPath = (path) => {
-    return {
-        type: actionTypes.SET_AUTH_REDIRECT_PATH,
-        path: path
-    };
-};
-
 export const authCheckState = () => {
     return dispatch => {
         const token = localStorage.getItem('cctoken');
         if (!token) {
-            dispatch(logout());
+            //dispatch(logout());
         } else {
             const email = localStorage.getItem('ccemail')
             const username = localStorage.getItem('ccusername')
-            const friends = JSON.parse(localStorage.getItem('ccfriends'));
+            const fri = localStorage.getItem('ccfriends')
+            const friends = fri?JSON.parse(fri):null;
             const av = localStorage.getItem('ccavatar')
             const avatar = av?JSON.parse(av):null;
-            dispatch(authSuccess(token, email, username, friends, avatar));
+            const nms = localStorage.getItem('ccnewmessages')
+            const newmessages = nms?JSON.parse(nms):null;
+            dispatch(authSuccess(token, email, username, friends, avatar, newmessages));
              
         }
     };

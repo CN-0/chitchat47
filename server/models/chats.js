@@ -6,8 +6,7 @@ const chatsSchema = new mongoose.Schema({
         required:true,
         ref:'Message'
     }],
-    partcipients:[],
-    sockets:[]
+    partcipients:[]
 },{
     timestamps:true
 })

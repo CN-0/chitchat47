@@ -11,17 +11,17 @@ const Chat = props =>{
         messageList.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
     }
     useEffect(()=>{
-        if(props.mymessages){
+        if(props.mychat){
             scrollToBottom()
         }
-    }, [props.mymessages])
+    }, [props.mychat])
 
     const textSubmitted = e =>{
         e.preventDefault()
         props.newMessage({
             content:e.target.input.value,
-            chat:props.openChat.chat,
-            recipient:props.openChat.friend,
+            chat:props.mychat.chat,
+            recipient:props.openChat.email,
             sender:props.myemail
         })
         e.target.input.value = ""
@@ -30,14 +30,14 @@ const Chat = props =>{
     return(
         <div className="chat-page">
         <div className="chat__name" >
-            {props.openChat.friend}
+            {props.openChat.username}
         </div>
         <div className="messages" ref={(div) => {
             messageList = div;
             }}>
-            {props.mymessages?props.mymessages.map(mess=>{
+            {props.mychat&&props.mychat.messages?props.mychat.messages.map((mess,index)=>{
                 return(
-                <div key={mess._id} className="message">
+                <div key={index} className="message">
                     <div className="sender">
                     {mess.sender}
                     </div>
@@ -57,7 +57,7 @@ const Chat = props =>{
 
 const mapStateToProps = state => {
     return {
-      mymessages: state.auth.messages.messages,
+      mychat: state.auth.messages,
       myemail: state.auth.email
     };
 };

@@ -29,16 +29,15 @@ const userSchema = new mongoose.Schema({
     },
     avatar:{
         name: String,
-        img:{
-            data: Buffer,
-            contentType: String
-        }
+        image: Buffer,
+        contentType: String
     },
-    friends: [],
+    socket: String,
+    newMessages:{},
+    friends: [{type:mongoose.SchemaTypes.ObjectId,ref:'User'}],
     tokens: [{
         token: {
-            type: String,
-            required: true
+            type: String
         }
     }]
 },{
